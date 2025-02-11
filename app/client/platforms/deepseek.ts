@@ -120,7 +120,8 @@ export class DeepSeekApi implements LLMApi {
 
       const isR1 =
         options.config.model.endsWith("-reasoner") ||
-        options.config.model.endsWith("-r1");
+        options.config.model.endsWith("-r1") ||
+        options.config.model.endsWith("-r1-search");
 
       // make a fetch request
       const requestTimeoutId = setTimeout(
