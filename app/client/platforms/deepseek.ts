@@ -1,12 +1,6 @@
 "use client";
 // azure and openai, using same models. so using same LLMApi.
-import {
-  ApiPath,
-  DEEPSEEK_BASE_URL,
-  DeepSeek,
-  REQUEST_TIMEOUT_MS,
-  REQUEST_TIMEOUT_MS_FOR_THINKING,
-} from "@/app/constant";
+import { ApiPath, DEEPSEEK_BASE_URL, DeepSeek } from "@/app/constant";
 import {
   useAccessStore,
   useAppConfig,
@@ -26,6 +20,7 @@ import { getClientConfig } from "@/app/config/client";
 import {
   getMessageTextContent,
   getMessageTextContentWithoutThinking,
+  getTimeoutMSByModel,
 } from "@/app/utils";
 import { RequestPayload } from "./openai";
 import { fetch } from "@/app/utils/stream";
@@ -126,7 +121,7 @@ export class DeepSeekApi implements LLMApi {
       // make a fetch request
       const requestTimeoutId = setTimeout(
         () => controller.abort(),
-        isR1 ? REQUEST_TIMEOUT_MS_FOR_THINKING : REQUEST_TIMEOUT_MS,
+        getTimeoutMSByModel(options.config.model),
       );
 
       if (shouldStream) {
@@ -177,8 +172,8 @@ export class DeepSeekApi implements LLMApi {
 
             // Skip if both content and reasoning_content are empty or null
             if (
-              (!reasoning || reasoning.trim().length === 0) &&
-              (!content || content.trim().length === 0)
+              (!reasoning || reasoning.length === 0) &&
+              (!content || content.length === 0)
             ) {
               return {
                 isThinking: false,
@@ -186,12 +181,12 @@ export class DeepSeekApi implements LLMApi {
               };
             }
 
-            if (reasoning && reasoning.trim().length > 0) {
+            if (reasoning && reasoning.length > 0) {
               return {
                 isThinking: true,
                 content: reasoning,
               };
-            } else if (content && content.trim().length > 0) {
+            } else if (content && content.length > 0) {
               return {
                 isThinking: false,
                 content: content,
